@@ -30,7 +30,7 @@ const refreshToken = async (
 ): Promise<ITokenRes | null> => {
   try {
     const res = await axios.post(
-      `${CONTROLLER_NAME}//RenewToken?token=${refreshToken}`
+      `${CONTROLLER_NAME}/RenewToken?token=${refreshToken}`
     );
 
     setAuthHeader(res.data.accessToken);

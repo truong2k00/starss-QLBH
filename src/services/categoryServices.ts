@@ -18,10 +18,8 @@ const Update = async (id: number, name: null, file?: File) => {
     if (!file) {
       await axios.put(`${CONTROLLER_NAME}/Update/${id}?categoryName=` + name);
     } else {
-      alert("success");
       const formData = new FormData();
-      formData.append("image", file);
-      console.log(formData);
+      formData.append("files", file);
       await axios.put(
         `${CONTROLLER_NAME}/Update/${id}?categoryName=${name}`, // Đảm bảo rằng bạn đã đặt đúng URL endpoint của bạn và truyền tham số cần thiết
         formData, // Truyền FormData object chứa tệp và dữ liệu khác
@@ -41,9 +39,20 @@ const Delete = async (id: number) => {
   } catch {}
 };
 
-const Create = async (name: null, imgFile?: File) => {
+const Create = async (name: null, imgFile: File) => {
   try {
-    await axios.post(`${CONTROLLER_NAME}/${CONTROLLER_CREATE}`);
+    const formData = new FormData();
+    formData.append("files", imgFile);
+
+    await axios.post(
+      `${CONTROLLER_NAME}/${CONTROLLER_CREATE}`, // Đảm bảo rằng bạn đã đặt đúng URL endpoint của bạn và truyền tham số cần thiết
+      formData, // Truyền FormData object chứa tệp và dữ liệu khác
+      {
+        headers: {
+          "Content-Type": "multipart/form-data", // Đặt kiểu dữ liệu của yêu cầu thành 'multipart/form-data'
+        },
+      }
+    );
   } catch {}
 };
 

@@ -22,6 +22,7 @@
         ></v-img
         ><v-file-input
           v-model="inputFile"
+          @change="onSavechange($event, item)"
           label="File input"
           prepend-icon="mdi-camera"
           variant="filled"
@@ -76,7 +77,7 @@
           icon="mdi-swap-vertical-circle"
           density="compact"
           title="Save"
-          @click="onSavechange(item)"
+          @click="onSavechangeName(item)"
         ></VBtn>
         {{}}
         <VBtn
@@ -93,6 +94,7 @@
 <script setup lang="ts">
 import { VDataTable } from "vuetify/labs/VDataTable";
 import category from "@/services/categoryServices";
+import checkPictures from "@/common/Untilitie/pictures";
 import { fa } from "vuetify/lib/locale";
 import { tr } from "vuetify/lib/locale";
 
@@ -134,7 +136,9 @@ const loadData = async () => {
   tableConfig.value.data = res;
 };
 
-const inputFile = ref(null);
+const errTextPictures = ref("");
+
+const inputFile = ref("");
 
 // Hàm xử lý khi người dùng chọn file mới
 const onCancelEdit = () => {
@@ -142,13 +146,26 @@ const onCancelEdit = () => {
   editIconClick.value = !editIconClick;
 };
 
-const onSavechange = (item) => {
+const onSavechangeName = (item) => {
   item.value.categoryName = editedCategoryName.value;
-  category.Update(
-    item.value.productCategoryID,
-    item.value.categoryName,
-    inputFile.value
-  );
+  category.Update(item.value.productCategoryID, item.value.categoryName);
+  editIconClick.value = !editIconClick;
+  editingItemIds.value = [];
+};
+
+const onSavechange = (event, item) => {
+  const file = event.target.files[0];
+
+  if (!file) {
+    item.value.categoryName = editedCategoryName.value;
+    category.Update(item.value.productCategoryID, item.value.categoryName);
+    editIconClick.value = !editIconClick;
+    editingItemIds.value = [];
+    return;
+  }
+
+  item.value.categoryName = editedCategoryName.value;
+  category.Update(item.value.productCategoryID, item.value.categoryName, file);
   editIconClick.value = !editIconClick;
   editingItemIds.value = [];
 };

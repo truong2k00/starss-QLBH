@@ -1,4 +1,3 @@
-import router from "@/router";
 import axios from "axios";
 
 const axiosIns = axios.create({
@@ -10,7 +9,7 @@ const axiosIns = axios.create({
 });
 
 // ℹ️ Add request interceptor to send the authorization header on each subsequent request after login
-axiosIns.interceptors.request.use((config) => {
+axiosIns.interceptors.request.use(async (config) => {
   // Retrieve token from localStorage
 
   // If token is found
@@ -33,12 +32,13 @@ axiosIns.interceptors.request.use((config) => {
 
 // ℹ️ Add response interceptor to handle 401 response
 axiosIns.interceptors.response.use(
-  (response) => {
+  async (response) => {
     return response;
   },
-  (error) => {
+  async (error) => {
+    router.push("/login");
     // Handle error
-    if (error.response.status === 401) {
+    if (error.response === 401) {
       // ℹ️ Logout user and redirect to login page
       // Remove "userData" from localStorage
       localStorage.removeItem("userData");
@@ -48,7 +48,6 @@ axiosIns.interceptors.response.use(
       localStorage.removeItem("userAbilities");
 
       // If 401 response returned from api
-      router.push("/login");
     } else {
       return Promise.reject(error);
     }

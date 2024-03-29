@@ -37,6 +37,7 @@ const err = ref({
 });
 
 onMounted(() => {
+  localStorage.removeItem(localStorageKey.ACCESS_TOKEN);
   localStorage.removeItem(localStorageKey.REFRESH_TOKEN);
   localStorage.removeItem(localStorageKey.USER_DATA);
 });
@@ -150,12 +151,14 @@ const loginUser = async () => {
               <VCol cols="12">
                 <AppTextField
                   v-model="password"
+                  @change="password"
                   label="Password"
                   :type="isPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="
                     isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'
                   "
                   @click:append-inner="isPasswordVisible = !isPasswordVisible"
+                  @keydown.enter="loginUser"
                 />
 
                 <div
