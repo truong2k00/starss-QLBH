@@ -14,13 +14,11 @@
   >
     <template #item.image="{ item }"
       ><template v-if="editingItemIds.includes(item.value.productCategoryID)">
-        <v-img
+        <VImg
           width="3rem"
           aspect-ratio="16/9"
           cover
-          :src="item.value.image"
-        ></v-img
-        ><v-file-input
+          :src="item.value.image" /><v-file-input
           v-model="inputFile"
           @change="onSavechange($event, item)"
           label="File input"
@@ -97,27 +95,21 @@ import category from "@/services/categoryServices";
 import checkPictures from "@/common/Untilitie/pictures";
 import { fa } from "vuetify/lib/locale";
 import { tr } from "vuetify/lib/locale";
+import DataTableHelper from "@/common/untilities/dataTableHelper";
 
+//click update
 const editIconClick = ref(false);
 const editingItemIds = ref([]);
 
 const editedCategoryName = ref("");
-const tableConfig = ref({
-  headers: [
+const tableConfig = ref(
+  DataTableHelper.initTableConfig([
     { title: "", key: "data-table-expand" },
     { title: "Image", key: "image" },
     { title: "Name", key: "categoryName" },
     { title: "Action", key: "action" },
-  ],
-  data: [],
-  pagination: {
-    pageNo: 1,
-    pageSize: 5,
-    pageSizeOptions: [5, 10, 20, 50],
-    totalPages: 1,
-    totalItems: 1,
-  },
-});
+  ])
+);
 
 const deleteProduct = (item) => {
   alert(JSON.stringify(item.value.productCategoryID));
@@ -133,7 +125,11 @@ const onEditItem = (item) => {
 
 const loadData = async () => {
   const res = await category.GetAll();
-  tableConfig.value.data = res;
+  tableConfig.value = DataTableHelper.updatePagination(
+    tableConfig.value,
+    res,
+    []
+  );
 };
 
 const errTextPictures = ref("");
@@ -145,7 +141,7 @@ const onCancelEdit = () => {
   editingItemIds.value = [];
   editIconClick.value = !editIconClick;
 };
-
+//update categoryname
 const onSavechangeName = (item) => {
   item.value.categoryName = editedCategoryName.value;
   category.Update(item.value.productCategoryID, item.value.categoryName);
@@ -153,6 +149,7 @@ const onSavechangeName = (item) => {
   editingItemIds.value = [];
 };
 
+//update categoryname and upload image
 const onSavechange = (event, item) => {
   const file = event.target.files[0];
 
@@ -169,6 +166,8 @@ const onSavechange = (event, item) => {
   editIconClick.value = !editIconClick;
   editingItemIds.value = [];
 };
+
+//load data to tableconfig
 onMounted(() => {
   loadData();
 });

@@ -1,6 +1,6 @@
 interface IBasePaginationQueryParams {
-  pageSize: Number
-  pageNo: Number
+  pageSize: Number;
+  pageNo: Number;
 }
 
-export default IBasePaginationQueryParams
+export default IBasePaginationQueryParams;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import LocalStorageKey from "@/common/constants/LocalStorageKey";
-import avatar1 from "@images/avatars/avatar-1.png";
+import avatardemo from "@images/avatars/avatar.png";
 import { json } from "stream/consumers";
 var dataUser = JSON.parse(localStorage.getItem(LocalStorageKey.USER_DATA));
 </script>
@@ -15,7 +15,7 @@ var dataUser = JSON.parse(localStorage.getItem(LocalStorageKey.USER_DATA));
     color="success"
   >
     <VAvatar class="cursor-pointer" color="primary" variant="tonal">
-      <VImg :src="avatar1" />
+      <VImg :src="avatardemo" />
 
       <!-- SECTION Menu -->
       <VMenu activator="parent" width="230" location="bottom end" offset="14px">
@@ -32,7 +32,7 @@ var dataUser = JSON.parse(localStorage.getItem(LocalStorageKey.USER_DATA));
                   color="success"
                 >
                   <VAvatar color="primary" variant="tonal">
-                    <VImg :src="avatar1" />
+                    <VImg :src="avatardemo" />
                   </VAvatar>
                 </VBadge>
               </VListItemAction>

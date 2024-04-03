@@ -1,9 +1,9 @@
-import IBasePaginationQueryParams from '@/interfaces/IBasePaginationQueryParams'
+import IBasePaginationQueryParams from "@/interfaces/IBasePaginationQueryParams";
 
 interface ISanPhamQueryParams extends IBasePaginationQueryParams {
-  searchText: string
-  categoryIds: Number[]
-  status?: Boolean
+  searchText: string;
+  categoryIds: number[];
+  status?: Boolean;
 }
 
-export default ISanPhamQueryParams
+export default ISanPhamQueryParams;

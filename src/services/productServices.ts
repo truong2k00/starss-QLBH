@@ -1,31 +1,38 @@
-import axios from '@/plugins/axios'
-import { isParameter } from 'typescript'
-import { ca } from 'vuetify/locale'
+import axios from "@/plugins/axios";
 
-const CONTROLLER_NAME = 'Product'
-const CONTROLLER_DELETE = 'Delete'
+const CONTROLLER_NAME = "Product";
+const CONTROLLER_DELETE = "Delete";
 
-const GetAll = async () => {
+const GetAll = async (query?: any) => {
+  console.log(query);
   try {
-    const res = await axios.get(`${CONTROLLER_NAME}/GetAll?sale=false`)
-    console.log(res.data)
-    return res.data
+    const res = await axios.post(`${CONTROLLER_NAME}/GetAll`, {
+      pagination: {
+        pageNo: 0,
+        keyWord: query.keyWord,
+      },
+      keyWord: query.keyWord,
+      accountID: 0,
+      categoryIDs: query.categoryIDs,
+      sale: query.sale,
+    });
+    return res.data;
   } catch {
-    return null
+    return null;
   }
-}
+};
 
 const DeleteProduct = async () => {
   try {
-    const res = await axios.delete(`${CONTROLLER_NAME}/` + CONTROLLER_DELETE)
+    const res = await axios.delete(`${CONTROLLER_NAME}/` + CONTROLLER_DELETE);
   } catch {
-    return null
+    return null;
   }
-}
+};
 
 const Product = {
   GetAll,
   DeleteProduct,
-}
+};
 
-export default Product
+export default Product;
