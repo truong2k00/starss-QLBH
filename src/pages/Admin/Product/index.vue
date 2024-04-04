@@ -1,133 +1,7 @@
-
-<template>
-  <v-card>
-    <v-card>
-      <v-cart style="card-header fill-height height">
-        <VRow min-width="12px">
-          <VCol cols="8">
-            <span style="height: 2em">
-              <h2 style="margin-left: 18px">Product</h2>
-            </span>
-          </VCol>
-          <VCol cols="4">
-            <div>
-              <VBtn
-                append-icon="mdi-new-box"
-                prepend-icon="mdi-plus-thick"
-                class="attractive-color"
-                style="position: absolute; right: 0"
-                @click="onAddItem()"
-              >
-                <template v-slot:prepend>
-                  <v-icon color="success"></v-icon>
-                </template>
-                Add New Product
-              </VBtn>
-            </div>
-          </VCol>
-        </VRow>
-      </v-cart>
-      <div class="card-header fill-height height">
-        <v-row>
-          <v-col class="search-area" cols="3">
-            <v-text-field
-              v-model="queryParams.searchText"
-              placeholder="Search..."
-              variant="solo"
-              solo-inverted
-              @blur="onSearchInputBlur"
-            />
-          </v-col>
-          <v-col class="filter-area" cols="9">
-            <v-row>
-              <VCol cols="6">
-                <VCombobox
-                  v-model="tabledropdow"
-                  multiple
-                  clearable
-                  chips
-                  :items="categoryDatasource"
-                  placeholder="Category"
-                  item-title="categoryName"
-                  item-value="productCategoryID"
-                  @blur="onCategoryDropdownChanged"
-                />
-              </VCol>
-              <v-col cols="6">
-                <v-combobox
-                  v-model="queryParams.status"
-                  clearable
-                  :items="statusDatasource"
-                  placeholder="active"
-                  item-title="title"
-                  item-value="value"
-                  @blur="onStatusDropdownChanged"
-                />
-              </v-col>
-            </v-row>
-          </v-col>
-        </v-row>
-      </div>
-      <div class="card-body">
-        <!-- <VDataTable :items="tableConfig.data"></VDataTable> -->
-        <VDataTable
-          ref="table"
-          :headers="tableConfig.headers"
-          :items="tableConfig.data"
-          :items-per-page="tableConfig.pagination.pageSize"
-          :items-per-page-options="tableConfig.pagination.pageSizeOptions"
-          :fixed-header="{
-            style: { backgroundColor: 'primary', color: 'black' },
-          }"
-          :search="queryParams.searchText"
-          items-per-page-text="quản lý sản phẩm"
-        >
-          <template #item.imageUrl="{ item }">
-            <v-img
-              v-if="
-                item.value &&
-                item.value.imageProduct &&
-                item.value.imageProduct.length > 0
-              "
-              :src="item.value.imageProduct[0].imageUrl"
-              alt="Hình ảnh"
-              width="3rem"
-              style="max-width: 100px; max-height: 100px"
-            />
-            <v-img
-              v-else
-              :src="nullproduct"
-              alt="null"
-              style="max-width: 100px; max-height: 100px"
-            />
-          </template>
-          <template #item.action="{ item }">
-            <VBtn
-              color="#1E88E5"
-              icon="mdi-pencil"
-              density="compact"
-              @click="ondeleteItem(item.row)"
-            ></VBtn>
-            {{}}
-            <VBtn color="error" icon="mdi-trash-can" density="compact"></VBtn>
-          </template>
-        </VDataTable>
-        <v-pagination
-          v-model="tableConfig.pagination.pageNo"
-          :length="tableConfig.pagination.totalPages"
-          @input="onPageChange"
-          color="primary"
-        ></v-pagination>
-      </div>
-      <div class="card-footer"></div>
-    </v-card>
-    <ComposeDialog :v-model:isDialogVisible="true" />
-  </v-card>
-</template>
 <script setup lang="ts">
-import { onMounted, ref, getCurrentInstance } from "vue";
+import { getCurrentInstance, onBeforeMount, ref } from "vue";
 import nullproduct from "@/assets/images/avatars/nullproduct.png";
-import ComposeDialog from "@/components/dialogs/ConfirmDialog.vue";
+import addEditProduct from "./addEditProduct.vue";
 import { VDataTable } from "vuetify/labs/VDataTable";
 import ProductServices from "@/services/productServices";
 import { IProductCategoryServicesRes } from "@/interfaces/res/Response_Models/IProductCategoryServices.res";
@@ -146,14 +20,23 @@ const statusDatasource = ref([
     value: false,
   },
 ]);
-const instance = getCurrentInstance();
 
 const tabledropdow = ref([]);
+
+const instance = getCurrentInstance();
+const workingItem = ref(null);
+const loading = ref(false);
+const searchText = ref("");
+const showDialog = ref(false);
+const table = ref("table");
+
+const onCreateEditClicked = () => {
+  instance?.refs.createEditDialog.showCreateEditDialog();
+};
 
 const tableConfig = ref(
   DataTableHelper.initTableConfig([
     { title: "", key: "data-table-expand" },
-    { title: "Sản Phẩm ID", key: "productID" },
     { title: "Người tạo", key: "username" },
     { title: "Image", key: "imageUrl" },
     { title: "Tên Sản Phẩm", key: "product_Name" },
@@ -211,6 +94,9 @@ const loadTableData = () => {
   };
   loadData(param);
 };
+const onEdititem = (item) => {
+  instance?.refs.createEditDialog.showCreateEditDialog(item);
+};
 
 const onSearchInputBlur = () => {
   loadTableData();
@@ -218,15 +104,6 @@ const onSearchInputBlur = () => {
 
 const onCategoryDropdownChanged = () => {
   loadTableData();
-};
-
-const onFilterChange = () => {
-  alert("a");
-  loadTableData();
-};
-
-const onChange = (event) => {
-  console.log("ass");
 };
 
 const onStatusDropdownChanged = () => {
@@ -242,6 +119,132 @@ const route = useRoute();
 console.log(route);
 const pageName = ref("");
 </script>
+
+
+<template>
+  <v-card>
+    <v-card>
+      <v-cart style="card-header fill-height height">
+        <VRow min-width="12px">
+          <VCol cols="8">
+            <span style="height: 2em">
+              <h2 style="margin-left: 18px">Product</h2>
+            </span>
+          </VCol>
+          <VCol cols="4"> </VCol>
+        </VRow>
+      </v-cart>
+      <div class="card-header fill-height height">
+        <v-row>
+          <v-col class="search-area" cols="3">
+            <v-text-field
+              v-model="queryParams.searchText"
+              placeholder="Search..."
+              variant="solo"
+              solo-inverted
+              @blur="onSearchInputBlur"
+            />
+          </v-col>
+          <v-col class="filter-area" cols="7">
+            <v-row>
+              <VCol cols="6">
+                <VCombobox
+                  v-model="tabledropdow"
+                  multiple
+                  clearable
+                  chips
+                  :items="categoryDatasource"
+                  placeholder="Category"
+                  item-title="categoryName"
+                  item-value="productCategoryID"
+                  @blur="onCategoryDropdownChanged"
+                />
+              </VCol>
+              <v-col cols="4">
+                <v-combobox
+                  v-model="queryParams.status"
+                  clearable
+                  :items="statusDatasource"
+                  placeholder="active"
+                  item-title="title"
+                  item-value="value"
+                  @blur="onStatusDropdownChanged"
+                />
+              </v-col>
+            </v-row>
+          </v-col>
+          <v-col class="filter-area" cols="2"
+            ><VBtn
+              append-icon="mdi-new-box"
+              prepend-icon="mdi-plus-thick"
+              class="attractive-color"
+              style="position: absolute; right: 0"
+              @click="onCreateEditClicked()"
+            >
+              <template v-slot:prepend>
+                <v-icon color="success"></v-icon>
+              </template>
+              Add
+            </VBtn></v-col
+          >
+        </v-row>
+      </div>
+      <div class="card-body">
+        <!-- <VDataTable :items="tableConfig.data"></VDataTable> -->
+        <VDataTable
+          ref="table"
+          :headers="tableConfig.headers"
+          :items="tableConfig.data"
+          :items-per-page="tableConfig.pagination.pageSize"
+          :items-per-page-options="tableConfig.pagination.pageSizeOptions"
+          :fixed-header="{
+            style: { backgroundColor: 'primary', color: 'black' },
+          }"
+          :search="queryParams.searchText"
+          items-per-page-text="quản lý sản phẩm"
+        >
+          <template #item.imageUrl="{ item }">
+            <v-img
+              v-if="
+                item.value &&
+                item.value.imageProduct &&
+                item.value.imageProduct.length > 0
+              "
+              :src="item.value.imageProduct[0].imageUrl"
+              alt="Hình ảnh"
+              width="3rem"
+              style="max-width: 100px; max-height: 100px"
+            />
+            <v-img
+              v-else
+              :src="nullproduct"
+              alt="null"
+              style="max-width: 100px; max-height: 100px"
+            />
+          </template>
+          <template #item.action="{ item }">
+            <VBtn
+              color="#1E88E5"
+              icon="mdi-pencil"
+              density="compact"
+              @click="onEdititem(item)"
+            ></VBtn>
+            {{}}
+            <VBtn color="error" icon="mdi-trash-can" density="compact"></VBtn>
+          </template>
+        </VDataTable>
+        <v-pagination
+          v-model="tableConfig.pagination.pageNo"
+          :length="tableConfig.pagination.totalPages"
+          @input="onPageChange"
+          color="primary"
+        ></v-pagination>
+      </div>
+      <div class="card-footer"></div>
+    </v-card>
+    <addEditProduct ref="createEditDialog"> </addEditProduct>
+  </v-card>
+</template>
 
 <style scoped>
 .attractive-color {
