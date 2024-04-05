@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { onBeforeMount, ref } from "vue";
 import category from "@/services/categoryServices";
-import { log } from "console";
+import { error, log } from "console";
+import ProductServices from "@/services/productServices";
+import reqdata from "@/common/untilities/dataReq";
 
 const categoryDatasource = ref([]);
 
@@ -9,55 +11,100 @@ const loadCategory = async () => {
   try {
     const res = await category.GetAll();
     categoryDatasource.value = res;
-    // Gán dữ liệu vào biến tham chiếu
-    // categoryDatasource.value = res.map((item:) => {
-    //   return {
-    //     title: item.categoryName,
-    //     value: item.productCategoryID,
-    //   };
-    // }); // Kiểm tra dữ liệu đã được gán vào biến tham chiếu
   } catch (error) {
     alert("Error loading categories:");
   }
+};
+
+const textRules = [
+  (value) =>
+    (value !== null && value !== undefined && value !== false) ||
+    "This field is required",
+  (value) => !!value || "Text is required",
+  (value) => value >= 0 || " >0",
+];
+
+const capitalizedLabel = (label: boolean) => {
+  const convertLabelText = label.toString();
+
+  return convertLabelText.charAt(0).toUpperCase() + convertLabelText.slice(1);
 };
 
 onMounted(() => {
   loadCategory();
 });
 
-const files: FilesReq = ref<FilesReq>([]);
-
-const requestProduct: IProductServicesReq = ref<IProductServicesReq>({});
+const requestProduct = ref<IProductServicesReq>({});
 
 const items = ref({});
 
 const cardTitle = ref("");
 const edit = ref(true);
+const isEditable = ref(false);
 const showDialog = ref(false);
 const workingItem = ref({});
 const loading = ref(false);
 const emit = defineEmits(["onSaveClick"]);
 
-const showCreateEditDialog = (query?: any) => {
+const showCreateEditDialog = (query?: any, isReadonly: boolean = false) => {
   showDialog.value = true;
   loading.value = true;
+  // edit.value = false;
+  // //   items.value = requestProduct.value;
+  // //   cardTitle.value = "Thêm sản phẩm ";
+  // if (!id) {
+  //   // create new
+  //   edit.value = true;
+  //   cardTitle.value = "Add Product";
+  //   items.value = requestProduct.value;
+  // } else {
+  //   if (isReadonly) {
+  //     // view only
+  //     edit.value = false;
+  //   } else {
+  //     //edit
+  //   }
+  // }
+  isEditable.value = isReadonly;
   if (!query) {
-    edit.value = false;
+    edit.value = true;
     items.value = requestProduct.value;
     cardTitle.value = "Thêm sản phẩm ";
   } else {
-    edit.value = true;
-    items.value = query.value;
-    cardTitle.value = "Update ";
+    if (!isReadonly) {
+      edit.value = true;
+      items.value = query.value;
+      cardTitle.value = "Update ";
+    } else {
+      edit.value = false;
+      items.value = query.value;
+      cardTitle.value = "View ";
+    }
   }
 };
 
-const onSaveClick = () => {
-  console.log("sss");
-
-  if (edit) {
-    requestProduct.value = { ...items };
-    console.log(requestProduct.value);
+// const show = (id: number, isReadonly: boolean = false) {
+//   if (!id) {
+//     // create new
+//   } else {
+//     if (isReadonly) {
+//       // view only
+//     }
+//     else {
+//       //edit
+//     }
+//   }
+// }
+const onSaveClick = async () => {
+  try {
+    if (cardTitle.value === "Update ") {
+      requestProduct.value = reqdata.dataRequest(items.value);
+      await ProductServices.update(items.value.productID, requestProduct.value);
+    } else {
+      console.log("tạo mới");
+    }
+  } catch {
+    console.log("err");
   }
 };
 
@@ -101,6 +148,11 @@ const onCloseDialogIconClicked = () => {
         <span class="headline">
           {{ cardTitle }}
         </span>
+        <v-spacer></v-spacer>
+        <!-- Sử dụng v-spacer để tạo khoảng cách giữa title và nút close -->
+        <!-- <v-btn icon @click="closeCard">
+          <v-icon>mdi-close</v-icon>
+        </v-btn> -->
       </VCardTitle>
       <VCardText>
         <VContainer>
@@ -109,29 +161,34 @@ const onCloseDialogIconClicked = () => {
               <AppSelect
                 v-model="items.categoryID"
                 chips
+                :readonly="!edit"
                 :items="categoryDatasource"
                 label="Category"
                 item-title="categoryName"
                 item-value="productCategoryID"
               />
             </VCol>
-            <VCol cols="3">
-              <VCheckbox label="new product" />
-            </VCol>
-            <VCol cols="3">
-              <VCheckbox v-model="items.sale" label="Sale" />
-            </VCol>
-            <VCol cols="3">
-              <v-text-field
-                v-if="items.sale"
-                label="%"
-                :model-value="items.priceSale"
-              />
-            </VCol>
+            <VSwitch
+              v-model="items.isNew"
+              :readonly="!edit"
+              :label="capitalizedLabel(items.isNew ? items.isNew : false)"
+            />
+            <VSwitch
+              v-model="items.sale"
+              :readonly="!edit"
+              :label="capitalizedLabel(items.sale ? items.sale : false)"
+            />
+            <v-text-field
+              v-if="items.sale"
+              :readonly="!edit"
+              label="%"
+              :model-value="items.priceSale"
+            />
           </VRow>
           <v-text-field
             v-model="items.product_Name"
             label="Tên Sản phẩm"
+            :readonly="!edit"
             class="mb-4"
             clearable
           ></v-text-field>
@@ -140,18 +197,23 @@ const onCloseDialogIconClicked = () => {
             label="Giới thiệu"
             class="mb-4"
             clearable
+            :readonly="!edit"
           ></v-text-field>
           <v-text-field
             label="Đơn giá $"
             type="number"
             class="mb-4"
+            :readonly="!edit"
             clearable
+            required
+            :rules="textRules"
             v-model="items.price"
           />
           <v-text-field
             label="Số Lượng"
             type="number"
             class="mb-4"
+            :readonly="!edit"
             clearable
             v-model="items.quantity"
           />
@@ -179,24 +241,38 @@ const onCloseDialogIconClicked = () => {
               </VRow> -->
             </VCol>
             <VCol cols="6"></VCol>
-            <VCol cols="3"><v-file-input v-model="files"></v-file-input></VCol
+            <VCol cols="3"
+              ><v-file-input
+                :readonly="!edit"
+                v-model="files"
+              ></v-file-input></VCol
           ></VRow>
         </VContainer>
       </VCardText>
       <VCardActions>
         <VSpacer />
+        <template v-if="title === 'Vỉew'">
+          <VBtn
+            color="error"
+            variant="outlined"
+            @click="onCloseDialogIconClicked"
+          >
+            Exit
+          </VBtn>
+        </template>
+        <template v-else
+          ><VBtn
+            color="error"
+            variant="outlined"
+            @click="onCloseDialogIconClicked"
+          >
+            Cancel
+          </VBtn>
 
-        <VBtn
-          color="error"
-          variant="outlined"
-          @click="onCloseDialogIconClicked"
-        >
-          Cancel
-        </VBtn>
-
-        <VBtn color="success" variant="elevated" @click="onSaveClick">
-          Save
-        </VBtn>
+          <VBtn color="success" variant="elevated" @click="onSaveClick">
+            Save
+          </VBtn>
+        </template>
       </VCardActions></v-card
     >
   </v-dialog>

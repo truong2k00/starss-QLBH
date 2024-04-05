@@ -7,6 +7,11 @@ export default [
     icon: { icon: "tabler-smart-home" },
   },
   {
+    title: "Account_Setting",
+    to: { name: "Account_Setting" },
+    icon: { icon: "tabler-smart-home" },
+  },
+  {
     title: "Table",
     icon: { icon: "mdi-table-cog" },
     children: [

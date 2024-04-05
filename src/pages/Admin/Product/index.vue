@@ -2,6 +2,7 @@
 import { getCurrentInstance, onBeforeMount, ref } from "vue";
 import nullproduct from "@/assets/images/avatars/nullproduct.png";
 import addEditProduct from "./addEditProduct.vue";
+import deleteDialog from "./deleteDialog.vue";
 import { VDataTable } from "vuetify/labs/VDataTable";
 import ProductServices from "@/services/productServices";
 import { IProductCategoryServicesRes } from "@/interfaces/res/Response_Models/IProductCategoryServices.res";
@@ -30,10 +31,6 @@ const searchText = ref("");
 const showDialog = ref(false);
 const table = ref("table");
 
-const onCreateEditClicked = () => {
-  instance?.refs.createEditDialog.showCreateEditDialog();
-};
-
 const tableConfig = ref(
   DataTableHelper.initTableConfig([
     { title: "", key: "data-table-expand" },
@@ -53,7 +50,6 @@ const loadData = async (param?: any) => {
     res.pagination
   );
   tableConfig.value = tabledata;
-  console.log(tabledata);
 };
 onMounted(() => {
   loadCategory();
@@ -94,6 +90,21 @@ const loadTableData = () => {
   };
   loadData(param);
 };
+
+const onCreateEditClicked = () => {
+  instance?.refs.createEditDialog.showCreateEditDialog();
+};
+
+const ondeleteClick = (item) => {
+  // instance?.refs.createEditDialog.showCreateEditDialog();
+  instance?.refs.deleteDialogProduct.showDeleteDialog(item.value);
+};
+
+const viewData = (item) => {
+  // instance?.refs.createEditDialog.showCreateEditDialog();
+  instance?.refs.createEditDialog.showCreateEditDialog(item, true);
+};
+
 const onEdititem = (item) => {
   instance?.refs.createEditDialog.showCreateEditDialog(item);
 };
@@ -116,7 +127,6 @@ import { ALL } from "dns";
 /** Title */
 
 const route = useRoute();
-console.log(route);
 const pageName = ref("");
 </script>
 
@@ -227,10 +237,25 @@ const pageName = ref("");
               color="#1E88E5"
               icon="mdi-pencil"
               density="compact"
+              title="Edit"
               @click="onEdititem(item)"
             ></VBtn>
             {{}}
-            <VBtn color="error" icon="mdi-trash-can" density="compact"></VBtn>
+            <VBtn
+              color="#F0F4C3"
+              title="View"
+              @click="viewData(item)"
+              icon="mdi-file-find"
+              density="compact"
+            ></VBtn>
+            {{}}
+            <VBtn
+              color="error"
+              @click="ondeleteClick(item)"
+              icon="mdi-trash-can"
+              title="Delete"
+              density="compact"
+            ></VBtn>
           </template>
         </VDataTable>
         <v-pagination
@@ -243,6 +268,7 @@ const pageName = ref("");
       <div class="card-footer"></div>
     </v-card>
     <addEditProduct ref="createEditDialog"> </addEditProduct>
+    <deleteDialog ref="deleteDialogProduct"></deleteDialog>
   </v-card>
 </template>
 

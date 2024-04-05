@@ -22,16 +22,33 @@ const GetAll = async (query?: any) => {
   }
 };
 
-const DeleteProduct = async () => {
+const update = async (id: number, query?: any) => {
+  console.log(query);
+  debugger;
   try {
-    const res = await axios.delete(`${CONTROLLER_NAME}/` + CONTROLLER_DELETE);
+    const res = await axios.put(`${CONTROLLER_NAME}/update?id=${id}`, {
+      ...query,
+    });
+    return "Success";
   } catch {
-    return null;
+    return "Update Failed";
+  }
+};
+
+const DeleteProduct = async (id: number) => {
+  try {
+    const res = await axios.delete(
+      `${CONTROLLER_NAME}/${CONTROLLER_DELETE}/${id}`
+    );
+    return "Success";
+  } catch {
+    return "Delete Failed";
   }
 };
 
 const Product = {
   GetAll,
+  update,
   DeleteProduct,
 };
 

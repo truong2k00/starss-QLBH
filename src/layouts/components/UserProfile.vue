@@ -56,7 +56,7 @@ var dataUser = JSON.parse(localStorage.getItem(LocalStorageKey.USER_DATA));
           </VListItem>
 
           <!-- 👉 Settings -->
-          <VListItem link>
+          <VListItem link :to="'/Account_Setting'">
             <template #prepend>
               <VIcon class="me-2" icon="tabler-settings" size="22" />
             </template>

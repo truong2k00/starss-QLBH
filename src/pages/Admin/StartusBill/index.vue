@@ -30,40 +30,13 @@
     </template>
 
     <template #item.action="{ item }">
-      <template v-if="!editingItemIds.includes(item.value.statusBillId)">
-        <VBtn
-          color="#1E88E5"
-          icon="mdi-pencil"
-          density="compact"
-          @click="onEditItem(item)"
-          title="Edit"
-        ></VBtn>
-        {{}}
-        <VBtn
-          color="error"
-          icon="mdi-trash-can"
-          title="Delete"
-          density="compact"
-          @click="deleteProduct(item)"
-        ></VBtn>
-      </template>
-      <template v-else>
-        <VBtn
-          color="#1E88E5"
-          icon="mdi-swap-vertical-circle"
-          density="compact"
-          title="Save"
-          @click="onSavechange(item)"
-        ></VBtn>
-        {{}}
-        <VBtn
-          color="#D50000"
-          icon="mdi-cancel"
-          title="Cancel"
-          density="compact"
-          @click="onCancelEdit()"
-        ></VBtn>
-      </template> </template
+      <VBtn
+        color="#1E88E5"
+        icon="mdi-file-find"
+        density="compact"
+        @click="viewData(item)"
+        title="Edit"
+      ></VBtn> </template
   ></VDataTable>
 </template>
 
