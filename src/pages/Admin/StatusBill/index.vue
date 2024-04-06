@@ -11,7 +11,9 @@
     expand-on-click
     :headers="tableConfig.headers"
     :items="tableConfig.data"
-  >
+    ><template #item.data-table-expand="{ item }"
+      ><v-icon color="success"></v-icon>{{ countStatus(item) }}</template
+    >
     <template #item.status_Name="{ item }">
       <template v-if="editingItemIds.includes(item.value.statusBillId)">
         <!-- Hiển thị trường dữ liệu cho phép chỉnh sửa -->
@@ -34,25 +36,37 @@
         color="#1E88E5"
         icon="mdi-file-find"
         density="compact"
-        @click="viewData(item)"
+        @click="onview(item)"
         title="Edit"
       ></VBtn> </template
   ></VDataTable>
+  <dialogcue ref="dialogcuelog"></dialogcue>
 </template>
 
 <script setup lang="ts">
+import { getCurrentInstance, onBeforeMount, ref } from "vue";
 import { VDataTable } from "vuetify/labs/VDataTable";
+import dialogcue from "@/pages/Admin/StatusBill/DialogCUE.vue";
 import statusbillServices from "@/services/statusbillServices";
+import billservices from "@/services/bill.api";
 import { fa } from "vuetify/lib/locale";
 import { tr } from "vuetify/lib/locale";
+import { ITEMS_PER_PAGE_OPTIONS } from "@/common/constants/totalpage";
 
 const editIconClick = ref(false);
 const editingItemIds = ref([]);
 
+const instance = getCurrentInstance();
+const onview = (item) => {
+  instance?.refs.dialogcuelog.showCreateEditDialog(
+    item.value.statusBillId,
+    true
+  );
+};
+
 const editedstatus_Name = ref("");
 const tableConfig = ref({
   headers: [
-    { title: "", key: "data-table-expand" },
     { title: "Status Name", key: "status_Name" },
     { title: "Action", key: "action" },
   ],
@@ -65,6 +79,25 @@ const tableConfig = ref({
     totalItems: 1,
   },
 });
+
+const countStatus = async (item) => {
+  console.log(await thenStatus(item));
+};
+
+const thenStatus = async (item) => {
+  try {
+    const res = await billservices.GetBillStatusID(item.value.statusBillId);
+
+    if (res.data && res.data.length > 0) {
+      return 1;
+    } else {
+      return 0;
+    }
+  } catch (error) {
+    console.error("Error occurred while fetching bill status:", error);
+    return 0; // Return 0 in case of error
+  }
+};
 
 const onEditItem = (item) => {
   editingItemIds.value = [];
