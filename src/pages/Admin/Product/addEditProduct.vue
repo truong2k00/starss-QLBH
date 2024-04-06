@@ -21,7 +21,7 @@ const textRules = [
     (value !== null && value !== undefined && value !== false) ||
     "This field is required",
   (value) => !!value || "Text is required",
-  (value) => value >= 0 || " >0",
+  (value) => value >= 0 || "Please enter a number greater than 0",
 ];
 
 const capitalizedLabel = (label: boolean) => {
@@ -190,13 +190,13 @@ const onCloseDialogIconClicked = () => {
             label="Tên Sản phẩm"
             :readonly="!edit"
             class="mb-4"
-            clearable
+            :clearable="edit"
           ></v-text-field>
           <v-text-field
             v-model="items.productDescription"
             label="Giới thiệu"
             class="mb-4"
-            clearable
+            :clearable="edit"
             :readonly="!edit"
           ></v-text-field>
           <v-text-field
@@ -204,7 +204,7 @@ const onCloseDialogIconClicked = () => {
             type="number"
             class="mb-4"
             :readonly="!edit"
-            clearable
+            :clearable="edit"
             required
             :rules="textRules"
             v-model="items.price"
@@ -214,7 +214,7 @@ const onCloseDialogIconClicked = () => {
             type="number"
             class="mb-4"
             :readonly="!edit"
-            clearable
+            :clearable="edit"
             v-model="items.quantity"
           />
           <VRow>
@@ -242,22 +242,19 @@ const onCloseDialogIconClicked = () => {
             </VCol>
             <VCol cols="6"></VCol>
             <VCol cols="3"
-              ><v-file-input
-                :readonly="!edit"
-                v-model="files"
-              ></v-file-input></VCol
+              ><v-file-input v-if="edit" v-model="files"></v-file-input></VCol
           ></VRow>
         </VContainer>
       </VCardText>
       <VCardActions>
         <VSpacer />
-        <template v-if="title === 'Vỉew'">
+        <template v-if="!edit">
           <VBtn
             color="error"
             variant="outlined"
             @click="onCloseDialogIconClicked"
           >
-            Exit
+            Close
           </VBtn>
         </template>
         <template v-else

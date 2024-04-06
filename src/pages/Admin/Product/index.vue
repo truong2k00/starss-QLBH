@@ -138,7 +138,7 @@ const pageName = ref("");
         <VRow min-width="12px">
           <VCol cols="8">
             <span style="height: 2em">
-              <h2 style="margin-left: 18px">Product</h2>
+              <h2 style="font-size: 30px; margin-left: 18px">Product</h2>
             </span>
           </VCol>
           <VCol cols="4"> </VCol>

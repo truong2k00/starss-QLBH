@@ -1,5 +1,3 @@
-import LocalStorageKey from "@/common/constants/LocalStorageKey";
-import authservices from "@/services/auth/login";
 import axios from "axios";
 
 const axiosIns = axios.create({
@@ -38,17 +36,17 @@ axiosIns.interceptors.response.use(
     return response;
   },
   async (error) => {
-    try {
-      localStorage.removeItem(LocalStorageKey.ACCESS_TOKEN);
-      if (localStorage.getItem("refreshToken") !== null) {
-        const res = await authservices.refreshToken(
-          localStorage.getItem("refreshToken")
-        );
-        console.log(res);
-      }
-    } catch (err) {
-      router.push("/login");
-    }
+    // try {
+    //   localStorage.removeItem(LocalStorageKey.ACCESS_TOKEN);
+    //   if (localStorage.getItem("refreshToken") !== null) {
+    //     const res = await authservices.refreshToken(
+    //       localStorage.getItem("refreshToken")
+    //     );
+    //     console.log(res);
+    //   }
+    // } catch (err) {
+    //   router.push("/login");
+    // }
     // Handle error
     if (error.response === 401) {
       // ℹ️ Logout user and redirect to login page
@@ -61,6 +59,7 @@ axiosIns.interceptors.response.use(
 
       // If 401 response returned from api
     } else {
+      router.push("/login");
       return Promise.reject(error);
     }
   }

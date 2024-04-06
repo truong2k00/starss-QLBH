@@ -32,7 +32,7 @@ export default [
 
       {
         title: "Status Bill",
-        to: { path: "/Admin/StartusBill" },
+        to: { path: "/Admin/StatusBill" },
       },
     ],
     badgeContent: "4",
