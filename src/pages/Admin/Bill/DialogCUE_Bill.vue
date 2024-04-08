@@ -7,34 +7,17 @@ import reqdata from "@/common/untilities/dataReq";
 import DataTableHelper from "@/common/untilities/dataTableHelper";
 
 const idStatus = ref(0);
-const tableconfig = ref(
-  DataTableHelper.initTableConfig([
-    { title: "date_Create", key: "date_Create" },
-    { title: "status_Name", key: "status_Name" },
-    { title: "userName", key: "userName" },
-    { title: "totalPrice", key: "totalPrice" },
-    { title: "address", key: "address" },
-  ])
-);
+const datareq = ref({});
 
-const loadDataTable = async (id?: any) => {
+const loadData = async (id?: any) => {
   try {
-    const res = await billServices.GetBillStatusID(id);
-    const tabledata = DataTableHelper.updatePagination(
-      tableconfig.value,
-      res.data,
-      res.pagination
-    );
-    tableconfig.value = tabledata;
-    console.log(res);
+    const res = await billServices.GetByID(id);
+    return res?.data;
   } catch (error) {
     alert("Error loading categories:");
+    return null;
   }
 };
-
-const requestProduct = ref<IProductServicesReq>({});
-
-const items = ref({});
 
 const cardTitle = ref("");
 const edit = ref(true);
@@ -42,38 +25,32 @@ const isEditable = ref(false);
 const showDialog = ref(false);
 const workingItem = ref({});
 const loading = ref(false);
-const emit = defineEmits(["onSaveClick"]);
+// const emit = defineEmits(["onSaveClick"]);
 
-const showCreateEditDialog = (data?: any, isReadonly: boolean = false) => {
+const showCreateEditDialog = async (
+  data?: any,
+  isReadonly: boolean = false
+) => {
   showDialog.value = true;
   loading.value = true;
   idStatus.value = data.statusBillId;
   isEditable.value = isReadonly;
+
   if (!data) {
     edit.value = true;
     cardTitle.value = "Add New ";
   } else {
-    loadDataTable(data.statusBillId);
+    workingItem.value = await loadData(data.billId);
+
     if (!isReadonly) {
       edit.value = true;
-      cardTitle.value = "Update " + data.status_Name;
+      cardTitle.value = "Update";
     } else {
       edit.value = false;
-      cardTitle.value = "View " + data.status_Name;
+      cardTitle.value = "View";
     }
   }
-};
-const onSaveClick = async () => {
-  try {
-    if (cardTitle.value === "Update ") {
-      requestProduct.value = reqdata.dataRequest(items.value);
-      await ProductServices.update(items.value.productID, requestProduct.value);
-    } else {
-      console.log("tạo mới");
-    }
-  } catch {
-    console.log("err");
-  }
+  console.log(workingItem.value);
 };
 
 defineExpose({
@@ -110,6 +87,9 @@ const textRules = [
   (value) => value >= 0 || " >0",
 ];
 
+const showtest = () => {
+  console.log(workingItem.value.billId);
+};
 const capitalizedLabel = (label: boolean) => {
   const convertLabelText = label.toString();
 
@@ -138,9 +118,30 @@ const capitalizedLabel = (label: boolean) => {
       </VCardTitle>
       <VCardText>
         <VContainer>
-          <VRow class="mb-4"> = </VRow>
-
-          <VRow> = </VRow>
+          <VTextField
+            :readonly="!edit"
+            :clearable="edit"
+            required
+            v-model="workingItem.address"
+          ></VTextField>
+          <VTextField
+            :readonly="!edit"
+            :clearable="edit"
+            required
+            v-model="workingItem.userName"
+          ></VTextField>
+          <VTextField
+            :readonly="!edit"
+            :clearable="edit"
+            required
+            v-model="workingItem.date_Create"
+          ></VTextField>
+          <VTextField
+            :readonly="!edit"
+            :clearable="edit"
+            required
+            v-model="workingItem.totalPrice"
+          ></VTextField>
         </VContainer>
       </VCardText>
       <VCardActions>

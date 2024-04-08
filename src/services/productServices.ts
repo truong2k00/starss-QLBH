@@ -4,10 +4,9 @@ const CONTROLLER_NAME = "Product";
 const CONTROLLER_DELETE = "Delete";
 
 const GetAll = async (query?: any) => {
-  console.log(query);
   try {
     const res = await axios.post(`${CONTROLLER_NAME}/GetAll`, {
-      pagination: {
+      reqPagination: {
         pageNo: 0,
         keyWord: query.keyWord,
       },
@@ -16,6 +15,7 @@ const GetAll = async (query?: any) => {
       categoryIDs: query.categoryIDs,
       sale: query.sale,
     });
+    console.log(res.data);
     return res.data;
   } catch {
     return null;

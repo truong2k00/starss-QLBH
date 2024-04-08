@@ -11,8 +11,24 @@
     expand-on-click
     :headers="tableConfig.headers"
     :items="tableConfig.data"
-    ><template #item.data-table-expand="{ item }"
-      ><v-icon color="success"></v-icon>{{ countStatus(item) }}</template
+    :header-props="{
+      sticky: true,
+      style: {
+        'background-color': '#000000',
+        color: '#333',
+        'font-weight': 'bold',
+        padding: '10px',
+      },
+    }"
+  >
+    <template #item.dataBill="{ item }"
+      ><VChip
+        :color="resolveStatusVariant(item.value.dataBill).color"
+        class="font-weight-medium"
+        size="small"
+      >
+        {{ resolveStatusVariant(item.value.dataBill).text }}
+      </VChip></template
     >
     <template #item.status_Name="{ item }">
       <template v-if="editingItemIds.includes(item.value.statusBillId)">
@@ -32,13 +48,10 @@
     </template>
 
     <template #item.action="{ item }">
-      <VBtn
-        color="#1E88E5"
-        icon="mdi-file-find"
-        density="compact"
-        @click="onview(item)"
-        title="Edit"
-      ></VBtn> </template
+      <VBtn @click="onview(item)">
+        Edit
+        <VIcon end icon="mdi-file-find" />
+      </VBtn> </template
   ></VDataTable>
   <dialogcue ref="dialogcuelog"></dialogcue>
 </template>
@@ -52,47 +65,52 @@ import billservices from "@/services/bill.api";
 import { fa } from "vuetify/lib/locale";
 import { tr } from "vuetify/lib/locale";
 import { ITEMS_PER_PAGE_OPTIONS } from "@/common/constants/totalpage";
+import DataTableHelper from "@/common/untilities/dataTableHelper";
+import router from "@/router";
 
 const editIconClick = ref(false);
 const editingItemIds = ref([]);
 
+const resolveStatusVariant = (status: number) => {
+  if (status > 100) {
+    return { color: "error", text: status };
+  } else if (status >= 50) return { color: "info", text: status };
+  else if (status >= 30) return { color: "success", text: status };
+  else if (status >= 20) return { color: "warning", text: status };
+  else if (status >= 1) return { color: "primary", text: status };
+  else return { color: "info", text: status };
+};
+
 const instance = getCurrentInstance();
 const onview = (item) => {
-  instance?.refs.dialogcuelog.showCreateEditDialog(
-    item.value.statusBillId,
-    true
-  );
+  // instance?.refs.dialogcuelog.showCreateEditDialog(item.value, true);
+  router.push("bill?statusID=" + item.value.statusBillId);
 };
 
 const editedstatus_Name = ref("");
-const tableConfig = ref({
-  headers: [
+const tableConfig = ref(
+  DataTableHelper.initTableConfig([
+    { title: "", key: "dataBill" },
     { title: "Status Name", key: "status_Name" },
     { title: "Action", key: "action" },
-  ],
-  data: [],
-  pagination: {
-    pageNo: 1,
-    pageSize: 5,
-    pageSizeOptions: [5, 10, 20, 50],
-    totalPages: 1,
-    totalItems: 1,
-  },
-});
+  ])
+);
 
-const countStatus = async (item) => {
-  console.log(await thenStatus(item));
+const addDataBill = async () => {
+  for (const item of tableConfig.value.data) {
+    // Đếm số lượng thuộc tính của từng đối tượng (trừ đi thuộc tính id)
+    const res = await getcountStatus(item.statusBillId);
+    console.log(res.data);
+
+    // Thêm thuộc tính count vào từng đối tượng
+    item.dataBill = res.data.length;
+  }
 };
 
-const thenStatus = async (item) => {
+const getcountStatus = async (id) => {
   try {
-    const res = await billservices.GetBillStatusID(item.value.statusBillId);
-
-    if (res.data && res.data.length > 0) {
-      return 1;
-    } else {
-      return 0;
-    }
+    const res = await billservices.GetBill(id);
+    return res;
   } catch (error) {
     console.error("Error occurred while fetching bill status:", error);
     return 0; // Return 0 in case of error
@@ -104,13 +122,18 @@ const onEditItem = (item) => {
   editedstatus_Name.value = item.value.status_Name;
   editingItemIds.value.push(item.value.statusBillId);
   editIconClick.value = true;
-  console.log(editingItemIds);
 };
 
 const loadData = async () => {
   const res = await statusbillServices.GetAll();
-  tableConfig.value.data = res;
-  console.log(tableConfig);
+  const tabledata = DataTableHelper.updatePagination(
+    tableConfig.value,
+    res,
+    res.pagination
+  );
+  tableConfig.value = tabledata;
+
+  await addDataBill();
 };
 
 const onCancelEdit = () => {
@@ -124,7 +147,15 @@ const onSavechange = (item) => {
   editIconClick.value = !editIconClick;
   editingItemIds.value = [];
 };
+
 onMounted(() => {
   loadData();
 });
 </script>
+
+
+<style scoped>
+.custom-header {
+  color: blue;
+}
+</style>

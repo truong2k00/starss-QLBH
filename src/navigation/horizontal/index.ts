@@ -34,8 +34,12 @@ export default [
         title: "Status Bill",
         to: { path: "/Admin/StatusBill" },
       },
+      {
+        title: "Bill",
+        to: { path: "/Admin/bill" },
+      },
     ],
-    badgeContent: "4",
+    badgeContent: "5",
     badgeClass: "bg-primary",
   },
   {
