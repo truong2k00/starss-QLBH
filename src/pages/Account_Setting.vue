@@ -4,6 +4,7 @@ import category from "@/services/categoryServices";
 import { getCurrentInstance } from "vue";
 import accountservices from "@/services/account.api";
 import { log } from "console";
+import AccountSettingsAccount from "./components/AccountSettingsAccount.vue";
 import snackbar from "@/SnackBar.vue";
 
 const instance = getCurrentInstance();
@@ -22,28 +23,6 @@ const loadAccount = async () => {
 onMounted(() => {
   loadAccount();
 });
-
-// const showDeleteDialog = (query?: any) => {
-//   item.value = query;
-//   // item.value = query.value;
-//   // console.log(item.value.productID);
-//   cardTitle.value = "Account_Setting";
-//   showDialog.value = true;
-// };
-
-// const ondeleteClick = async () => {
-//   const res = await productServices.DeleteProduct(item.value.productID);
-//   instance?.refs.snackbarvisible.showsnackbar(res);
-// };
-
-// const onCloseDialogIconClicked = () => {
-//   showDialog.value = false;
-//   item.value = [];
-// };
-
-// defineExpose({
-//   showDeleteDialog,
-// });
 </script>
 <template>
   <VCard
@@ -53,24 +32,18 @@ onMounted(() => {
       </span>
     </VCardTitle>
     <VCardText>
-      <VContainer>
-        <v-card-text class="red-text"
-          >Bạn có chắc chắn muốn xóa sản phẩm này không?
-        </v-card-text>
-      </VContainer>
+      <VWindow
+        v-model="activeTab"
+        class="mt-6 disable-tab-transition"
+        :touch="false"
+      >
+        <VWindowItem value="account">
+          <account-settings-account />
+        </VWindowItem>
+      </VWindow>
     </VCardText>
-    <VCardActions>
-      <VSpacer />
-
-      <VBtn color="error" variant="outlined" @click="onCloseDialogIconClicked">
-        Cancel
-      </VBtn>
-
-      <VBtn color="success" variant="elevated" @click="ondeleteClick">
-        Save
-      </VBtn>
-    </VCardActions></VCard
-  >
+    <VCardActions> <VSpacer /> </VCardActions
+  ></VCard>
   <snack-bar ref="snackbarvisible"></snack-bar>
 </template>
 
