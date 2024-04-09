@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { getCurrentInstance, onBeforeMount, ref } from "vue";
 import nullproduct from "@/assets/images/avatars/nullproduct.png";
+import reqPaginations from "@/common/untilities/reqPagination";
 import addEditProduct from "./addEditProduct.vue";
 import deleteDialog from "./deleteDialog.vue";
 import { VDataTable } from "vuetify/labs/VDataTable";
@@ -42,8 +43,8 @@ const tableConfig = ref(
     { title: "Thao tác", key: "action" },
   ])
 );
-const loadData = async (param?: any) => {
-  const res = await ProductServices.GetAll(param);
+const loadData = async (param?: any, reqPagination?: any) => {
+  const res = await ProductServices.GetAll(param, reqPagination);
   const tabledata = DataTableHelper.updatePagination(
     tableConfig.value,
     res.data,
@@ -72,7 +73,7 @@ const loadCategory = async () => {
   }
 };
 
-const loadTableData = () => {
+const loadParam = () => {
   const keyWord = queryParams.value.searchText || "";
 
   // Xác định giá trị cho categoryIDs
@@ -88,7 +89,18 @@ const loadTableData = () => {
     categoryIDs: categoryIDs,
     sale: sale,
   };
-  loadData(param);
+  return param;
+};
+
+const loadTableData = () => {
+  // Tạo object param
+  const reqPagination = reqPaginations(
+    tableConfig.value.pagination.pageSize,
+    tableConfig.value.pagination.pageNo,
+    queryParams.searchText
+  );
+  const param = loadParam();
+  loadData(param, reqPagination);
 };
 
 const onCreateEditClicked = () => {
@@ -107,6 +119,29 @@ const viewData = (item) => {
 
 const onEdititem = (item) => {
   instance?.refs.createEditDialog.showCreateEditDialog(item);
+};
+
+const onPageSizeChage = () => {
+  const reqPagination = reqPaginations(
+    tableConfig.value.pagination.pageSize,
+    1,
+    queryParams.searchText
+  );
+  const param = loadParam();
+  console.log(reqPagination);
+
+  loadData(param, reqPagination);
+};
+
+const onPageNo = () => {
+  const reqPagination = reqPaginations(
+    tableConfig.value.pagination.pageSize,
+    tableConfig.value.pagination.pageNo,
+    queryParams.searchText
+  );
+  const param = loadParam();
+
+  loadData(param, reqPagination);
 };
 
 const onSearchInputBlur = () => {
@@ -257,13 +292,34 @@ const pageName = ref("");
               density="compact"
             ></VBtn>
           </template>
+          <template #bottom>
+            <VCardText class="pt-2">
+              <VRow>
+                <VCol lg="2" cols="3">
+                  <VTextField
+                    v-model="tableConfig.pagination.pageSize"
+                    label="Page Size:"
+                    type="number"
+                    min="-1"
+                    max="15"
+                    hide-details
+                    variant="underlined"
+                    @blur="onPageSizeChage"
+                  />
+                </VCol>
+
+                <VCol lg="10" cols="9" class="d-flex justify-end">
+                  <VPagination
+                    v-model="tableConfig.pagination.pageNo"
+                    @click="onPageNo"
+                    total-visible="5"
+                    :length="tableConfig.pagination.totalPages"
+                  />
+                </VCol>
+              </VRow>
+            </VCardText>
+          </template>
         </VDataTable>
-        <v-pagination
-          v-model="tableConfig.pagination.pageNo"
-          :length="tableConfig.pagination.totalPages"
-          @input="onPageChange"
-          color="primary"
-        ></v-pagination>
       </div>
       <div class="card-footer"></div>
     </v-card>

@@ -3,12 +3,11 @@ import axios from "@/plugins/axios";
 const CONTROLLER_NAME = "Product";
 const CONTROLLER_DELETE = "Delete";
 
-const GetAll = async (query?: any) => {
+const GetAll = async (query?: any, reqPagination?: any) => {
   try {
     const res = await axios.post(`${CONTROLLER_NAME}/GetAll`, {
       reqPagination: {
-        pageNo: 0,
-        keyWord: query.keyWord,
+        ...reqPagination,
       },
       keyWord: query.keyWord,
       accountID: 0,

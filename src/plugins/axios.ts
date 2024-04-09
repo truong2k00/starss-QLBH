@@ -1,5 +1,7 @@
 import axios from "axios";
 
+import router from "@/router";
+
 const axiosIns = axios.create({
   // You can add your headers here
   // ================================
@@ -58,8 +60,9 @@ axiosIns.interceptors.response.use(
       localStorage.removeItem("userAbilities");
 
       // If 401 response returned from api
-    } else {
+
       router.push("/login");
+    } else {
       return Promise.reject(error);
     }
   }

@@ -14,11 +14,8 @@
   >
     <template #item.image="{ item }"
       ><template v-if="editingItemIds.includes(item.value.productCategoryID)">
-        <VImg
-          width="3rem"
-          aspect-ratio="16/9"
-          cover
-          :src="item.value.image" /><v-file-input
+        <VImg width="3rem" aspect-ratio="16/9" cover :src="item.value.image" />
+        <v-file-input
           v-model="inputFile"
           @change="onSavechange($event, item)"
           label="File input"

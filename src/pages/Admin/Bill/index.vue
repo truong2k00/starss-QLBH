@@ -3,12 +3,49 @@
     :headers="tableconfig.headers"
     :items="tableconfig.data"
     :items-per-page="pageSize"
-    :items-per-page-options="tableconfig.pagination.pageSizeOptions"
+    :page="tableconfig.pagination.pageNo"
+    class="elevation-1"
     ><template #item.action="{ item }">
       <VBtn color="success" variant="tonal" @click="onview(item)">
         View
         <VIcon end icon="mdi-file-find" />
       </VBtn>
+    </template>
+    <template #item.status_Name="{ item }">
+      <VChip
+        :color="status.resolveStatusVariant(item.value.statusBillID).color"
+        class="font-weight-medium"
+        size="small"
+      >
+        {{ status.resolveStatusVariant(item.value.statusBillID).text }}
+      </VChip>
+    </template>
+
+    <template #bottom>
+      <VCardText class="pt-2">
+        <VRow>
+          <VCol lg="2" cols="3">
+            <VTextField
+              v-model="tableconfig.pagination.pageSize"
+              label="Page Size:"
+              type="number"
+              min="-1"
+              max="15"
+              hide-details
+              variant="underlined"
+              @blur="onPageSizeChage"
+            />
+          </VCol>
+
+          <VCol lg="10" cols="9" class="d-flex justify-end">
+            <VPagination
+              v-model="tableconfig.pagination.pageNo"
+              total-visible="5"
+              :length="tableconfig.pagination.totalPages"
+            />
+          </VCol>
+        </VRow>
+      </VCardText>
     </template>
   </VDataTable>
   <dialogcue ref="dialogcuelog"></dialogcue>
@@ -17,6 +54,7 @@
 <script setup lang="ts">
 import DataTableHelper from "@/common/untilities/dataTableHelper";
 import billServices from "@/services/bill.api";
+import status from "@/common/untilities/statusVariant";
 import { getCurrentInstance, onBeforeMount, ref } from "vue";
 import dialogcue from "@/pages/Admin/Bill/DialogCUE_Bill.vue";
 import { VDataTable } from "vuetify/labs/VDataTable";
@@ -57,7 +95,6 @@ const loadDataTable = async (
       res.pagination
     );
     tableconfig.value = tabledata;
-    console.log(tableconfig);
   } catch (error) {
     alert("Error loading categories:");
   }
@@ -71,7 +108,22 @@ const action = ref(false);
 const searchText = ref(null);
 const reqPagination = ref({});
 
-const dpen = () => {
+const onPageSizeChage = () => {
+  reqPagination.value.pageSize = tableconfig.value.pagination.pageSize;
+  loadData();
+  console.log(tableconfig.value.pagination);
+};
+
+const loadData = () => {
+  loadDataTable(
+    reqPagination.value,
+    statusid.value,
+    accountID.value,
+    action.value
+  );
+};
+
+const loading = () => {
   const currentURL = window.location.href;
 
   // Tạo một URLSearchParams từ URL hiện tại
@@ -111,12 +163,7 @@ const dpen = () => {
     keyWord: searchText.value,
   };
 
-  loadDataTable(
-    reqPagination.value,
-    statusid.value,
-    accountID.value,
-    action.value
-  );
+  loadData();
 };
 
 watchEffect(() => {
@@ -124,6 +171,13 @@ watchEffect(() => {
 });
 
 onMounted(() => {
-  dpen();
+  loading();
 });
 </script>
+
+
+<style scoped>
+.elevation-1 {
+  color: red;
+}
+</style>

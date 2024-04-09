@@ -23,11 +23,11 @@
   >
     <template #item.dataBill="{ item }"
       ><VChip
-        :color="resolveStatusVariant(item.value.dataBill).color"
+        :color="status.resolveStatusCount(item.value.dataBill).color"
         class="font-weight-medium"
         size="small"
       >
-        {{ resolveStatusVariant(item.value.dataBill).text }}
+        {{ status.resolveStatusCount(item.value.dataBill).text }}
       </VChip></template
     >
     <template #item.status_Name="{ item }">
@@ -59,6 +59,7 @@
 <script setup lang="ts">
 import { getCurrentInstance, onBeforeMount, ref } from "vue";
 import { VDataTable } from "vuetify/labs/VDataTable";
+import status from "@/common/untilities/statusVariant";
 import dialogcue from "@/pages/Admin/StatusBill/DialogCUE.vue";
 import statusbillServices from "@/services/statusbillServices";
 import billservices from "@/services/bill.api";
@@ -70,16 +71,6 @@ import router from "@/router";
 
 const editIconClick = ref(false);
 const editingItemIds = ref([]);
-
-const resolveStatusVariant = (status: number) => {
-  if (status > 100) {
-    return { color: "error", text: status };
-  } else if (status >= 50) return { color: "info", text: status };
-  else if (status >= 30) return { color: "success", text: status };
-  else if (status >= 20) return { color: "warning", text: status };
-  else if (status >= 1) return { color: "primary", text: status };
-  else return { color: "info", text: status };
-};
 
 const instance = getCurrentInstance();
 const onview = (item) => {

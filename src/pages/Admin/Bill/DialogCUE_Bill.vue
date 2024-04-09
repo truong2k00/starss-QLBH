@@ -2,6 +2,7 @@
 import { onBeforeMount, ref } from "vue";
 import billServices from "@/services/bill.api";
 import { error, log } from "console";
+import status from "@/common/untilities/statusVariant";
 import ProductServices from "@/services/productServices";
 import reqdata from "@/common/untilities/dataReq";
 import DataTableHelper from "@/common/untilities/dataTableHelper";
@@ -12,6 +13,7 @@ const datareq = ref({});
 const loadData = async (id?: any) => {
   try {
     const res = await billServices.GetByID(id);
+
     return res?.data;
   } catch (error) {
     alert("Error loading categories:");
@@ -25,7 +27,16 @@ const isEditable = ref(false);
 const showDialog = ref(false);
 const workingItem = ref({});
 const loading = ref(false);
+
+const statusVarianID = (id) => {
+  statusVariants.value.color = status.resolveStatusVariant(id)?.color;
+  statusVariants.value.text = status.resolveStatusVariant(id)?.text;
+};
 // const emit = defineEmits(["onSaveClick"]);
+const statusVariants = ref({
+  color: "red",
+  text: "red",
+});
 
 const showCreateEditDialog = async (
   data?: any,
@@ -41,6 +52,7 @@ const showCreateEditDialog = async (
     cardTitle.value = "Add New ";
   } else {
     workingItem.value = await loadData(data.billId);
+    statusVarianID(workingItem.value.statusBillID);
 
     if (!isReadonly) {
       edit.value = true;
@@ -50,7 +62,6 @@ const showCreateEditDialog = async (
       cardTitle.value = "View";
     }
   }
-  console.log(workingItem.value);
 };
 
 defineExpose({
@@ -87,9 +98,6 @@ const textRules = [
   (value) => value >= 0 || " >0",
 ];
 
-const showtest = () => {
-  console.log(workingItem.value.billId);
-};
 const capitalizedLabel = (label: boolean) => {
   const convertLabelText = label.toString();
 
@@ -119,29 +127,48 @@ const capitalizedLabel = (label: boolean) => {
       <VCardText>
         <VContainer>
           <VTextField
+            class="mb-4"
+            label="Mã hóa đơn"
             :readonly="!edit"
             :clearable="edit"
             required
             v-model="workingItem.address"
           ></VTextField>
           <VTextField
+            label="Tài khoản tạo"
+            class="mb-4"
             :readonly="!edit"
             :clearable="edit"
             required
             v-model="workingItem.userName"
           ></VTextField>
           <VTextField
+            label="Thời gian tạo"
+            class="mb-4"
             :readonly="!edit"
             :clearable="edit"
             required
             v-model="workingItem.date_Create"
           ></VTextField>
           <VTextField
+            label="Thành Tiền"
+            class="mb-4"
             :readonly="!edit"
             :clearable="edit"
             required
             v-model="workingItem.totalPrice"
           ></VTextField>
+          <VRow>
+            <VCol cols="3"> <AppSelect /></VCol>
+            <VSpacer />
+            <VChip
+              :color="statusVariants.color"
+              class="font-weight-medium"
+              size="small"
+            >
+              {{ statusVariants.text }}
+            </VChip>
+          </VRow>
         </VContainer>
       </VCardText>
       <VCardActions>
