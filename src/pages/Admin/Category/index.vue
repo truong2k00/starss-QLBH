@@ -14,8 +14,18 @@
   >
     <template #item.image="{ item }"
       ><template v-if="editingItemIds.includes(item.value.productCategoryID)">
-        <VImg width="3rem" aspect-ratio="16/9" cover :src="item.value.image" />
+        <VImg
+          width="3rem"
+          @click="handelImageCLick"
+          aspect-ratio="16/9"
+          cover
+          :src="item.value.image" />
         <v-file-input
+          ref="inputfile"
+          type="file"
+          name="file"
+          v-show="false"
+          accept=".jpeg,.png,.jpg,GIF"
           v-model="inputFile"
           @change="onSavechange($event, item)"
           label="File input"
@@ -92,11 +102,17 @@ import category from "@/services/categoryServices";
 import checkPictures from "@/common/Untilitie/pictures";
 import { fa } from "vuetify/lib/locale";
 import { tr } from "vuetify/lib/locale";
+import { getCurrentInstance, onBeforeMount, ref } from "vue";
 import DataTableHelper from "@/common/untilities/dataTableHelper";
 
+const instance = getCurrentInstance();
 //click update
 const editIconClick = ref(false);
 const editingItemIds = ref([]);
+
+const handelImageCLick = () => {
+  instance?.refs.inputfile.click();
+};
 
 const editedCategoryName = ref("");
 const tableConfig = ref(
@@ -153,6 +169,7 @@ const onSavechange = (event, item) => {
   if (!file) {
     item.value.categoryName = editedCategoryName.value;
     category.Update(item.value.productCategoryID, item.value.categoryName);
+    loadData();
     editIconClick.value = !editIconClick;
     editingItemIds.value = [];
     return;
@@ -160,6 +177,7 @@ const onSavechange = (event, item) => {
 
   item.value.categoryName = editedCategoryName.value;
   category.Update(item.value.productCategoryID, item.value.categoryName, file);
+  loadData();
   editIconClick.value = !editIconClick;
   editingItemIds.value = [];
 };
